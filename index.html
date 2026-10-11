@@ -1,0 +1,923 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Programação CIITS'26</title>
+<style>
+/* Layout: header com banner da marca + abas de dia fixas + filtros + lista agrupada por horário, cards expansíveis */
+:root{
+  --bg:#f6f3f8;
+  --surface:#ffffff;
+  --ink:#1c0f22;
+  --ink-soft:#5c4f64;
+  --line:#e4dbe8;
+  --purple:#440054;
+  --purple-deep:#2c0036;
+  --teal:#02b98a;
+  --teal-bright:#02e3a7;
+  --chip-bg:#efe7f1;
+  --shadow:0 8px 24px -12px rgba(68,0,84,.25);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#140a18;
+    --surface:#1e1024;
+    --ink:#f3ecf5;
+    --ink-soft:#bda9c4;
+    --line:#3a2740;
+    --purple:#c77ad8;
+    --purple-deep:#1c0022;
+    --teal:#02e3a7;
+    --teal-bright:#3dffc9;
+    --chip-bg:#2a1830;
+    --shadow:0 8px 28px -12px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#140a18;
+  --surface:#1e1024;
+  --ink:#f3ecf5;
+  --ink-soft:#bda9c4;
+  --line:#3a2740;
+  --purple:#c77ad8;
+  --purple-deep:#1c0022;
+  --teal:#02e3a7;
+  --teal-bright:#3dffc9;
+  --chip-bg:#2a1830;
+  --shadow:0 8px 28px -12px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{
+  font-family:'Oswald',Impact,'Arial Narrow',sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.01em;
+  text-wrap:balance;
+}
+a{color:inherit}
+
+.hero{
+  position:relative;
+  background:#370044;
+  padding-top:env(safe-area-inset-top,0px);
+  overflow:hidden;
+}
+.hero-img-wrap{
+  max-width:1600px;
+  margin:0 auto;
+}
+.hero-img{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:2401/600;
+  object-fit:contain;
+  object-position:center;
+}
+.hero-sub{
+  background:#370044;
+  padding:8px 20px calc(10px + env(safe-area-inset-top,0px) * 0);
+  text-align:center;
+}
+.hero-sub p{
+  margin:0;
+  max-width:1040px;
+  margin:0 auto;
+  color:#d9c3e0;
+  font-size:.74rem;
+  letter-spacing:.03em;
+}
+
+.countdown{
+  background:var(--purple-deep);
+  padding:10px 16px;
+  display:flex;
+  justify-content:center;
+}
+.countdown-inner{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.countdown-label{
+  color:#d9c3e0;
+  font-size:.72rem;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.countdown-units{
+  display:flex;
+  gap:8px;
+}
+.countdown-unit{
+  background:rgba(255,255,255,.08);
+  border-radius:8px;
+  padding:4px 9px;
+  text-align:center;
+  min-width:46px;
+}
+.countdown-unit .num{
+  display:block;
+  font-family:'Oswald',Impact,'Arial Narrow',sans-serif;
+  font-size:1.05rem;
+  font-weight:700;
+  color:#fff;
+  line-height:1.1;
+}
+.countdown-unit .unit{
+  display:block;
+  font-size:.58rem;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  color:#c7aed1;
+  margin-top:1px;
+}
+.countdown.is-live .countdown-label{color:var(--teal-bright)}
+
+.bar{
+  position:sticky;
+  top:env(safe-area-inset-top,0px);
+  z-index:20;
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+.bar-inner{max-width:1040px;margin:0 auto;padding:10px 20px}
+
+.days{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:none;
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+}
+.day-btn{scroll-snap-align:start}
+.days::-webkit-scrollbar{display:none}
+.day-btn{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:1px;
+  padding:7px 16px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--ink-soft);
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.day-btn b{
+  font-family:'Oswald',sans-serif;
+  text-transform:uppercase;
+  font-size:.95rem;
+  letter-spacing:.03em;
+  color:inherit;
+}
+.day-btn span{font-size:.68rem;opacity:.85}
+.day-btn[aria-pressed="true"]{
+  background:var(--purple);
+  border-color:var(--purple);
+  color:#fff;
+}
+.day-btn[aria-pressed="true"] span{color:var(--teal-bright)}
+.day-count{
+  margin-left:auto;
+  opacity:.6;
+  font-variant-numeric:tabular-nums;
+}
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+  align-items:center;
+}
+.search-wrap{
+  position:relative;
+  flex:1 1 220px;
+  min-width:0;
+}
+.search-wrap svg{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:15px;height:15px;color:var(--ink-soft);pointer-events:none;
+}
+#search{
+  width:100%;
+  padding:8px 10px 8px 32px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--bg);
+  color:var(--ink);
+  font-size:.85rem;
+  font-family:'Inter',sans-serif;
+}
+#search:focus{outline:2px solid var(--teal);outline-offset:-1px}
+
+select{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--bg);
+  color:var(--ink);
+  font-size:.82rem;
+  font-family:'Inter',sans-serif;
+  max-width:170px;
+}
+
+.chipset{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:var(--chip-bg);
+  color:var(--ink-soft);
+  font-size:.76rem;
+  font-weight:600;
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  letter-spacing:.02em;
+  transition:background .15s,color .15s,border-color .15s;
+  white-space:nowrap;
+}
+.chip[aria-pressed="true"]{
+  background:var(--teal);
+  border-color:var(--teal);
+  color:#07261d;
+}
+.chip.ghost{background:transparent}
+
+main{max-width:1040px;margin:0 auto;padding:18px 20px 60px}
+
+.turno-head{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  margin:28px 0 12px;
+}
+.turno-head:first-child{margin-top:6px}
+.turno-head h2{
+  font-size:1.3rem;
+  margin:0;
+  color:var(--purple);
+}
+:root[data-theme="dark"] .turno-head h2,
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .turno-head h2{color:var(--teal-bright)}}
+.turno-head .rule{flex:1;height:1px;background:var(--line)}
+.turno-head .n{font-size:.75rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+.grid{display:flex;flex-direction:column;gap:10px}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px 16px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+}
+.card-top{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+}
+.time{
+  flex:0 0 auto;
+  width:76px;
+  padding-right:14px;
+  border-right:1px solid var(--line);
+  font-family:'Oswald',sans-serif;
+  font-size:1rem;
+  font-weight:600;
+  color:var(--purple);
+  line-height:1.2;
+  font-variant-numeric:tabular-nums;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .time{color:var(--teal-bright)}}
+:root[data-theme="dark"] .time{color:var(--teal-bright)}
+
+.card-body{flex:1;min-width:0}
+.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+.tag{
+  font-size:.64rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  padding:2px 8px;
+  border-radius:999px;
+  background:var(--chip-bg);
+  color:var(--purple);
+  font-family:'Inter',sans-serif;
+}
+:root[data-theme="dark"] .tag{color:var(--teal-bright)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tag{color:var(--teal-bright)}}
+.tag.eixo{background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-weight:600}
+
+.card h3{
+  margin:0 0 6px;
+  font-size:1rem;
+  text-transform:none;
+  letter-spacing:0;
+  font-weight:600;
+  color:var(--ink);
+  line-height:1.3;
+  font-family:'Inter',sans-serif;
+}
+.meta-line{
+  font-size:.8rem;
+  color:var(--ink-soft);
+  display:flex;
+  gap:4px;
+  margin-top:3px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.meta-line svg{width:13px;height:13px;vertical-align:-2px;margin-right:2px;flex:0 0 auto}
+.meta-line.place{font-weight:600;color:var(--ink);font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;margin-top:0}
+
+.chev{
+  flex:0 0 auto;
+  width:18px;height:18px;
+  color:var(--ink-soft);
+  transition:transform .2s;
+  margin-top:2px;
+}
+.card[aria-expanded="true"] .chev{transform:rotate(180deg)}
+
+.detail{
+  display:none;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px dashed var(--line);
+  font-size:.84rem;
+}
+.card[aria-expanded="true"] .detail{display:block}
+.speaker{margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.speaker:last-child{margin-bottom:0}
+.speaker-photo{width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--line);background:var(--line)}
+.speaker-body{flex:1;min-width:0}
+.speaker-name{font-weight:700;color:var(--ink)}
+.speaker-inst{color:var(--ink-soft);font-size:.78rem;font-weight:500}
+.speaker-bio{color:var(--ink-soft);margin-top:3px;line-height:1.45}
+.mod-line{margin-bottom:10px;color:var(--ink-soft)}
+.mod-line b{color:var(--ink)}
+.cursos-line{margin-top:10px;color:var(--ink-soft);font-size:.78rem;line-height:1.5}
+
+.empty{
+  text-align:center;
+  padding:50px 20px;
+  color:var(--ink-soft);
+}
+.empty h3{color:var(--ink);margin-bottom:6px}
+
+.count-bar{
+  font-size:.78rem;
+  color:var(--ink-soft);
+  margin-bottom:6px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  justify-content:space-between;
+}
+.sync-status{
+  font-size:.7rem;
+  color:var(--ink-soft);
+  opacity:.75;
+  white-space:nowrap;
+}
+.sync-status.is-live{color:var(--teal-bright,#02e3a7);opacity:.95}
+
+footer{
+  text-align:center;
+  padding:20px;
+  font-size:.74rem;
+  color:var(--ink-soft);
+}
+
+@media (max-width:640px){
+  .hero-sub{padding:7px 16px}
+  .hero-sub p{font-size:.68rem}
+  .bar-inner{padding:8px 16px}
+  main{padding:14px 16px 48px}
+  .controls{gap:6px}
+  .search-wrap{flex:1 1 100%}
+  select{max-width:none;flex:1 1 calc(50% - 3px)}
+  .day-btn{padding:6px 12px}
+  .day-btn b{font-size:.86rem}
+  .day-btn span{font-size:.62rem}
+  .chipset{gap:5px}
+  .chip{padding:5px 10px;font-size:.72rem}
+}
+@media (max-width:420px){
+  .card{padding:12px 13px}
+  .card-top{gap:11px}
+  .time{width:52px;padding-right:9px;font-size:.86rem}
+  .card h3{font-size:.94rem}
+  .meta-line,.meta-line.place{font-size:.74rem}
+  select{flex:1 1 100%}
+}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="hero">
+  <div class="hero-img-wrap">
+    <img class="hero-img" src="banner.png" alt="CIITS'26 Uniceuma — III Congresso Internacional de Inovação, Tecnologia e Sustentabilidade · 10 a 12 de novembro · Uniceuma, São Luís/MA">
+  </div>
+  <div class="hero-sub">
+    <p>PROGRAMAÇÃO COMPLETA DO EVENTO</p>
+  </div>
+  <div class="countdown" id="countdown">
+    <div class="countdown-inner">
+      <span class="countdown-label" id="countdownLabel">Faltam</span>
+      <div class="countdown-units" id="countdownUnits">
+        <div class="countdown-unit"><span class="num" id="cdD">–</span><span class="unit">dias</span></div>
+        <div class="countdown-unit"><span class="num" id="cdH">–</span><span class="unit">h</span></div>
+        <div class="countdown-unit"><span class="num" id="cdM">–</span><span class="unit">min</span></div>
+        <div class="countdown-unit"><span class="num" id="cdS">–</span><span class="unit">seg</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="days" id="days"></div>
+    <div class="controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search" type="text" placeholder="Buscar por título, palestrante ou local…" autocomplete="off">
+      </div>
+      <select id="turno">
+        <option value="">Todos os turnos</option>
+        <option value="Manhã">Manhã</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Noite">Noite</option>
+      </select>
+      <select id="local">
+        <option value="">Todos os locais</option>
+      </select>
+      <select id="tipo">
+        <option value="">Todos os tipos</option>
+      </select>
+    </div>
+    <div class="chipset" id="eixos" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<main>
+  <div class="count-bar">
+    <span id="countbar"></span>
+  </div>
+  <div id="list"></div>
+</main>
+
+<footer>CIITS'26 · Universidade Ceuma — programação sujeita a alterações</footer>
+
+<script id="data" type="application/json">[{"id":1,"data":"10/11/2026","diaLabel":"Dia 1","diaSub":"10 de novembro · Terça","turno":"Manhã","turnoKey":0,"horario":"09:00–10:30","minutos":540,"local":"Auditório Expedito Bacelar","tipo":"Painel de Abertura","titulo":"ZPE/MA: Como os novos empreendimentos podem incorporar inovação e responsabilidade socioambiental","moderador":"Paulo Fonseca e Fonseca / Alessandra","palestrantes":[{"nome":"Fernando Duailibi","bio":"Administrador – CRA nº 2145 * Gerente de Planejamento e Governança na Investe Maranhão * Fundador e Consultor na PLANMAX * Presidente Executivo na COMDES de São Luís * Diretor e Vice-presidente na FAEM e ACM-MA * Cargos Públicos Anteriores de Liderança na JUCEMA, DNPM e IPEMAR Condecorações e Homenagens de Destaque no CRA-MA, Governo do Maranhão e Câmara de São Luís","instituicao":null,"foto":null},{"nome":"Rakel Dourado Murad","bio":"Possui graduação em Direito - Unidade de Ensino Superior Dom Bosco (2011). Tem experiência na área de Direito, com ênfase em Direito Público. O método de estudo/trabalho baseado na metodologia utilizada pela ?Harvard University? e na Teoria do Processo de Decisão Racional, de Simon. O estudo e produção com objetivo de entender o Direito além das leis, utilizando os costumes, política, hábitos, teorias alternativas, e convenções como fundamento em decisões e solução de problemas, focando na interdisciplinaridade do Direito e a percepção da realidade além da letra da lei, com postura sempre investigativa e questionadora frente aos problemas jurídicos reais.","instituicao":null,"foto":null}],"eixos":["E1","E2","E3","E4","E5"],"cursos":["Todos os 24 cursos"]},{"id":5,"data":"10/11/2026","diaLabel":"Dia 1","diaSub":"10 de novembro · Terça","turno":"Manhã","turnoKey":0,"horario":"09:00–10:00","minutos":540,"local":"Metodologia Ativa 02","tipo":"Roda de Conversa","titulo":"Sou da licenciatura. Onde posso trabalhar além da escola? Carreiras e expeiências na Educação","moderador":"Mekaele","palestrantes":[{"nome":"Profa. Marcia Valeria Melo e Silva / Profa Michele Frota do Vale/Profa. Luzenice Martins Macedo","bio":null,"instituicao":null,"foto":null}],"eixos":["E1","E2"],"cursos":["Licenciaturas"]},{"id":12,"data":"10/11/2026","diaLabel":"Dia 1","diaSub":"10 de novembro · Terça","turno":"Manhã","turnoKey":0,"horario":"10:30–12:00","minutos":630,"local":"Sala 208 Ceuma V","tipo":"Painel","titulo":"Construção 4.0 em perspectiva internacional: BIM, IA e edifícios resilientes","moderador":"Prof. Débora","palestrantes":[{"nome":"Eng. Murilo Reis","bio":"eng.jmuriloreis@gmail.com","instituicao":null,"foto":null}],"eixos":["E2","E3","E5"],"cursos":["Engenharia Civil","Arquitetura","Design de Interiores","Engenharia de Produção","Engenharia Mecânica","Gestão Ambiental","Negócios Imobiliários"]},{"id":30,"data":"11/11/2026","diaLabel":"Dia 2","diaSub":"11 de novembro · Quarta","turno":"Manhã","turnoKey":0,"horario":"09:00–10:15","minutos":540,"local":"Sala CIX","tipo":"Conferência","titulo":"“Da ZPE de Bacabeira aos portos: circulação de mercadorias, fiscalização e oportunidades para fornecedores locais”.","moderador":"Fernando Duailibe","palestrantes":[{"nome":"Daniel Lira Lima Silva","bio":"Atual Gestor chefe do corpo técnico para a ação fiscal-Fiscalização de mercadorias em trânsito- SEFAZ-MA Auditor Fiscal da Receita Estadual do Maranhão MBA em gestão empresarial-FGV Pós-graduação-Especialista em auditoria e controladoria Graduado em Ciências Contábeis","instituicao":"SEFAZ-MA","foto":null}],"eixos":["E2","E3","E4"],"cursos":["Administração","Engenharia Civil","Engenharia de Produção","Logística","Gestão Pública","Ciências Contábeis","Direito","Gestão Ambiental","Negócios Imobiliários"]},{"id":34,"data":"11/11/2026","diaLabel":"Dia 2","diaSub":"11 de novembro · Quarta","turno":"Manhã","turnoKey":0,"horario":"10:30–12:00","minutos":630,"local":"Auditório Josué Montelo","tipo":"Painel","titulo":"PORTOS, LOGÍSTICA E GRANDES OBRAS: INOVAÇÃO","moderador":"Prof. Débora","palestrantes":[{"nome":"Eng. Felipe Ferreira Oliveira (DNIT)","bio":null,"instituicao":null,"foto":null}],"eixos":["E1","E2","E4"],"cursos":["Arquitetura","Engenharia Civil","Design","Design de Interiores","Gestão Pública","Direito","Sistemas de Informação","Serviço Social"]},{"id":57,"data":"11/11/2026","diaLabel":"Dia 2","diaSub":"11 de novembro · Quarta","turno":"Noite","turnoKey":2,"horario":"19:00–20:30","minutos":1140,"local":"Lab. de Informática","tipo":"Palestra","titulo":"Gestão Híbrida de Infraestrutura crítica com Azure Arc","moderador":"Yonara","palestrantes":[{"nome":"Elton de Carvalho Costa","bio":null,"instituicao":"Accenture","foto":null}],"eixos":["E1","E2"],"cursos":["Engenharia de Computação","CST em ADS","Engenharia de Software","Sistemas de Informação"]}]</script>
+<script>
+(function(){
+  "use strict";
+
+  var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/124GE2NNHHVoQbQkHDV_GPHjhAybyvaxHNlJZTODvUhA/export?format=csv&gid=0";
+
+  var DIA_INFO = {
+    "10/11/2026": {diaLabel:"Dia 1", diaSub:"10 de novembro · Terça"},
+    "11/11/2026": {diaLabel:"Dia 2", diaSub:"11 de novembro · Quarta"},
+    "12/11/2026": {diaLabel:"Dia 3", diaSub:"12 de novembro · Quinta"}
+  };
+  var WEEKDAYS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+  var MONTHS = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+
+  function diaInfoFor(dataStr, ordinalIndex){
+    if(DIA_INFO[dataStr]) return DIA_INFO[dataStr];
+    // dataStr expected as DD/MM/YYYY; derive a reasonable label/sub if it's a brand-new date
+    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(dataStr||'');
+    if(m){
+      var d = parseInt(m[1],10), mo = parseInt(m[2],10), y = parseInt(m[3],10);
+      var dt = new Date(y, mo-1, d);
+      var sub = d + ' de ' + (MONTHS[mo-1]||'') + ' · ' + (WEEKDAYS[dt.getDay()]||'');
+      return {diaLabel:'Dia ' + (ordinalIndex+1), diaSub: sub};
+    }
+    return {diaLabel:'Dia ' + (ordinalIndex+1), diaSub: dataStr||''};
+  }
+
+  var TURNO_CANON = {
+    'manha':'Manhã','manhã':'Manhã',
+    'tarde':'Tarde',
+    'noite':'Noite'
+  };
+  function canonTurno(t){
+    var key = (t||'').toString().trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return TURNO_CANON[key] || (t||'').toString().trim();
+  }
+  var TURNO_KEY = {'Manhã':0,'Tarde':1,'Noite':2};
+
+  // ---- time normalization: mirrors the Python regex pipeline used to build the dataset ----
+  function extractTimeParts(s){
+    var tokens = [];
+    var re = /(\d{1,3})(?:[:;](\d{2}))?(?:[:;](\d{2}))?\s*[Hh]?/g;
+    var m;
+    while((m = re.exec(s)) !== null){
+      if(m[0] === '') { re.lastIndex++; continue; }
+      var hhRaw = m[1];
+      if(hhRaw.length === 3 && hhRaw.charAt(0) === '0') hhRaw = hhRaw.slice(1);
+      var hh = parseInt(hhRaw,10) % 24;
+      var mm = m[2] ? parseInt(m[2],10) : 0;
+      tokens.push([hh,mm]);
+    }
+    return tokens;
+  }
+  function pad2(n){ return (n<10?'0':'')+n; }
+  function normTime(raw){
+    var toks = extractTimeParts(raw||'');
+    if(!toks.length) return raw||'';
+    if(toks.length === 1) return pad2(toks[0][0])+':'+pad2(toks[0][1]);
+    return pad2(toks[0][0])+':'+pad2(toks[0][1])+'–'+pad2(toks[1][0])+':'+pad2(toks[1][1]);
+  }
+  function minutosFrom(h){
+    var m = /^(\d{2}):(\d{2})/.exec(h||'');
+    if(m) return parseInt(m[1],10)*60 + parseInt(m[2],10);
+    return 0;
+  }
+
+  // ---- lightweight RFC4180 CSV parser (handles quoted fields, embedded commas/newlines/quotes) ----
+  function parseCSV(text){
+    var rows = [];
+    var row = [];
+    var field = '';
+    var inQuotes = false;
+    var i = 0, len = text.length;
+    while(i < len){
+      var c = text[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += c; i++; continue;
+      } else {
+        if(c === '"'){ inQuotes = true; i++; continue; }
+        if(c === ','){ row.push(field); field=''; i++; continue; }
+        if(c === '\r'){ i++; continue; }
+        if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; i++; continue; }
+        field += c; i++; continue;
+      }
+    }
+    if(field.length || row.length){ row.push(field); rows.push(row); }
+    return rows.filter(function(r){ return !(r.length===1 && r[0]===''); });
+  }
+
+  function splitNonEmpty(str, sep){
+    if(!str) return [];
+    return str.split(sep).map(function(x){return x.trim();}).filter(Boolean);
+  }
+
+  function parsePalestrantes(cell, bioCell, fotoCell){
+    if(!cell) return [];
+    var parts = splitNonEmpty(cell, ';;');
+    var bioParts = bioCell ? bioCell.split(/\n\s*\n/).map(function(x){return x.trim();}).filter(Boolean) : [];
+    var fotoParts = fotoCell ? splitNonEmpty(fotoCell, ';;') : [];
+    var sameBioCount = bioParts.length === parts.length;
+    var sameFotoCount = fotoParts.length === parts.length;
+    return parts.map(function(part, pIdx){
+      var bio = null, rest = part;
+      var pipeIdx = rest.indexOf('|');
+      if(pipeIdx !== -1){
+        bio = rest.slice(pipeIdx+1).trim() || null;
+        rest = rest.slice(0, pipeIdx).trim();
+      }
+      var inst = null;
+      var dashIdx = rest.indexOf('—'); // em dash used as nome — instituicao separator
+      if(dashIdx !== -1){
+        inst = rest.slice(dashIdx+1).trim() || null;
+        rest = rest.slice(0, dashIdx).trim();
+      }
+      // a separate "Mini-bio/Currículo" / "Foto (URL)" column, when present, takes precedence
+      if(sameBioCount && bioParts[pIdx]) bio = bioParts[pIdx];
+      else if(!sameBioCount && pIdx===0 && bioParts.length===1) bio = bioParts[0];
+      var foto = null;
+      if(sameFotoCount && fotoParts[pIdx]) foto = fotoParts[pIdx];
+      else if(!sameFotoCount && pIdx===0 && fotoParts.length===1) foto = fotoParts[0];
+      return { nome: rest, bio: bio, instituicao: inst, foto: foto };
+    }).filter(function(p){ return p.nome; });
+  }
+
+  function rowsToSessions(rows){
+    if(!rows.length) return [];
+    var header = rows[0].map(function(h){return h.trim().toLowerCase();});
+    var idx = {};
+    header.forEach(function(h,i){ idx[h]=i; });
+    var required = ['data','turno','horario','local','tipo','titulo'];
+    for(var r=0;r<required.length;r++){
+      if(idx[required[r]] === undefined) return null; // malformed sheet, bail out
+    }
+    var dayOrder = [];
+    var out = [];
+    for(var i=1;i<rows.length;i++){
+      var cols = rows[i];
+      if(!cols || !cols.length || cols.every(function(c){return !c || !c.trim();})) continue;
+      var get = function(name){ var j = idx[name]; return (j===undefined || cols[j]===undefined) ? '' : cols[j].trim(); };
+      var dataStr = get('data');
+      if(!dataStr) continue;
+      if(idx['check'] !== undefined){
+        var checkVal = (get('check')||'').toUpperCase();
+        if(checkVal !== 'TRUE' && checkVal !== '1' && checkVal !== 'SIM' && checkVal !== 'X') continue; // só atividades marcadas no Check entram na programação
+      }
+      if(dayOrder.indexOf(dataStr) === -1) dayOrder.push(dataStr);
+      var turno = canonTurno(get('turno'));
+      var horarioRaw = get('horario');
+      var horario = normTime(horarioRaw);
+      var eixos = splitNonEmpty(get('eixos'), ',');
+      var cursos = splitNonEmpty(get('cursos'), ';');
+      var moderador = get('moderacao') || null;
+      var info = diaInfoFor(dataStr, dayOrder.indexOf(dataStr));
+      out.push({
+        id: i,
+        data: dataStr,
+        diaLabel: info.diaLabel,
+        diaSub: info.diaSub,
+        turno: turno,
+        turnoKey: TURNO_KEY[turno] !== undefined ? TURNO_KEY[turno] : 0,
+        horario: horario,
+        minutos: minutosFrom(horario),
+        local: get('local') || 'A definir',
+        tipo: get('tipo') || 'A definir',
+        titulo: get('titulo') || '(sem título definido)',
+        moderador: moderador,
+        palestrantes: parsePalestrantes(get('palestrantes'), get('mini-bio/currículo'), get('foto (url)')),
+        eixos: eixos,
+        cursos: cursos
+      });
+    }
+    return out;
+  }
+
+  // ===================== app state & rendering =====================
+
+  var SESSIONS = JSON.parse(document.getElementById('data').textContent);
+  var DAYS = [], LOCAIS = [], TIPOS = [];
+  var EIXOS = ['E1','E2','E3','E4','E5'];
+
+  var state = { day: null, turno: '', local: '', tipo: '', eixos: new Set(), q: '' };
+
+  function safe(v){ return (v===null||v===undefined) ? '' : String(v); }
+  function esc(s){
+    return safe(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  var daysEl = document.getElementById('days');
+  var localSel = document.getElementById('local');
+  var turnoSel = document.getElementById('turno');
+  var tipoSel = document.getElementById('tipo');
+  var eixosEl = document.getElementById('eixos');
+  var searchEl = document.getElementById('search');
+  var listEl = document.getElementById('list');
+  var countEl = document.getElementById('countbar');
+  var syncEl = document.getElementById('syncStatus');
+
+  function rebuildControls(){
+    DAYS = [];
+    var seen = {};
+    SESSIONS.forEach(function(s){
+      if(!seen[s.data]){ seen[s.data] = true; DAYS.push({data:s.data, label:s.diaLabel, sub:s.diaSub}); }
+    });
+    LOCAIS = Array.from(new Set(SESSIONS.map(function(s){return s.local;}))).sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+    TIPOS = Array.from(new Set(SESSIONS.map(function(s){return s.tipo;}).filter(Boolean))).sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+
+    if(!state.day || !DAYS.some(function(d){return d.data===state.day;})){
+      state.day = DAYS[0] ? DAYS[0].data : null;
+    }
+
+    daysEl.innerHTML = '';
+    DAYS.forEach(function(d){
+      var btn = document.createElement('button');
+      btn.className = 'day-btn';
+      btn.setAttribute('aria-pressed', String(d.data === state.day));
+      btn.innerHTML = '<b>'+esc(d.label)+'</b><span>'+esc(d.sub)+'</span>';
+      btn.addEventListener('click', function(){
+        state.day = d.data;
+        Array.prototype.forEach.call(daysEl.children, function(b){ b.setAttribute('aria-pressed','false'); });
+        btn.setAttribute('aria-pressed','true');
+        render();
+      });
+      daysEl.appendChild(btn);
+    });
+
+    var prevLocal = state.local;
+    localSel.innerHTML = '<option value="">Todos os locais</option>';
+    LOCAIS.forEach(function(l){
+      var o = document.createElement('option');
+      o.value = l; o.textContent = l;
+      localSel.appendChild(o);
+    });
+    if(LOCAIS.indexOf(prevLocal) !== -1) localSel.value = prevLocal; else state.local = '';
+
+    var prevTipo = state.tipo;
+    tipoSel.innerHTML = '<option value="">Todos os tipos</option>';
+    TIPOS.forEach(function(t){
+      var o = document.createElement('option');
+      o.value = t; o.textContent = t;
+      tipoSel.appendChild(o);
+    });
+    if(TIPOS.indexOf(prevTipo) !== -1) tipoSel.value = prevTipo; else state.tipo = '';
+  }
+
+  localSel.addEventListener('change', function(){ state.local = localSel.value; render(); });
+  turnoSel.addEventListener('change', function(e){ state.turno = e.target.value; render(); });
+  tipoSel.addEventListener('change', function(){ state.tipo = tipoSel.value; render(); });
+
+  EIXOS.forEach(function(e){
+    var c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = e;
+    c.setAttribute('aria-pressed','false');
+    c.addEventListener('click', function(){
+      if(state.eixos.has(e)){ state.eixos.delete(e); c.setAttribute('aria-pressed','false'); }
+      else { state.eixos.add(e); c.setAttribute('aria-pressed','true'); }
+      render();
+    });
+    eixosEl.appendChild(c);
+  });
+
+  var searchTimer;
+  searchEl.addEventListener('input', function(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function(){ state.q = searchEl.value.trim().toLowerCase(); render(); }, 150);
+  });
+
+  function matches(s){
+    if(state.day && s.data !== state.day) return false;
+    if(state.turno && s.turno !== state.turno) return false;
+    if(state.local && s.local !== state.local) return false;
+    if(state.tipo && s.tipo !== state.tipo) return false;
+    if(state.eixos.size){
+      var ok = (s.eixos||[]).some(function(e){return state.eixos.has(e);});
+      if(!ok) return false;
+    }
+    if(state.q){
+      var hay = (s.titulo+' '+s.local+' '+s.tipo+' '+(s.moderador||'')+' '+(s.palestrantes||[]).map(function(p){return p.nome;}).join(' ')).toLowerCase();
+      if(hay.indexOf(state.q) === -1) return false;
+    }
+    return true;
+  }
+
+  function cardHtml(s){
+    var speakers = s.palestrantes || [];
+    var speakersChips = speakers.map(function(p){return esc(p.nome);}).join(', ');
+    var tags = '<span class="tag">'+esc(s.tipo)+'</span>' + (s.eixos||[]).map(function(e){return '<span class="tag eixo">'+esc(e)+'</span>';}).join('');
+    var hasDetail = speakers.length || s.moderador || (s.cursos && s.cursos.length);
+    var detail = '';
+    if(s.moderador){
+      detail += '<div class="mod-line">🎙️ <b>Mediação:</b> '+esc(s.moderador)+'</div>';
+    }
+    speakers.forEach(function(p){
+      detail += '<div class="speaker">'+(p.foto? '<img class="speaker-photo" src="'+esc(p.foto)+'" alt="'+esc(p.nome)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<div class="speaker-body"><div class="speaker-name">'+esc(p.nome)+(p.instituicao? ' <span class="speaker-inst">· '+esc(p.instituicao)+'</span>':'')+'</div>'+(p.bio? '<div class="speaker-bio">'+esc(p.bio)+'</div>':'')+'</div></div>';
+    });
+    if(s.cursos && s.cursos.length){
+      detail += '<div class="cursos-line"><b>Cursos envolvidos:</b> '+esc(s.cursos.join(' · '))+'</div>';
+    }
+    if(!hasDetail){
+      detail += '<div class="cursos-line">Detalhes de palestrantes e mediação a confirmar.</div>';
+    }
+    return ''+
+    '<div class="card" tabindex="0" role="button" aria-expanded="false" data-id="'+esc(s.id)+'">'+
+      '<div class="card-top">'+
+        '<div class="time">'+esc(s.horario||'—')+'</div>'+
+        '<div class="card-body">'+
+          '<div class="tagrow">'+tags+'</div>'+
+          '<h3>'+esc(s.titulo)+'</h3>'+
+          '<div class="meta-line place">📍 '+esc(s.local)+'</div>'+
+          '<div class="meta-line">'+(speakersChips? '👤 '+speakersChips : (s.moderador? '🎙️ '+esc(s.moderador) : 'Palestrante a confirmar'))+'</div>'+
+        '</div>'+
+        '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>'+
+      '</div>'+
+      '<div class="detail">'+detail+'</div>'+
+    '</div>';
+  }
+
+  function render(){
+    var filtered = SESSIONS.filter(matches);
+    countEl.textContent = filtered.length + (filtered.length===1 ? ' atividade encontrada' : ' atividades encontradas');
+
+    if(!filtered.length){
+      listEl.innerHTML = '<div class="empty"><h3>Nada por aqui</h3><p>Tente ajustar a busca ou os filtros.</p></div>';
+      return;
+    }
+
+    var turnos = ['Manhã','Tarde','Noite'];
+    var html = '';
+    turnos.forEach(function(t){
+      var items = filtered.filter(function(s){ return s.turno===t; });
+      if(!items.length) return;
+      html += '<div class="turno-head"><h2>'+t+'</h2><div class="rule"></div><div class="n">'+items.length+'</div></div>';
+      html += '<div class="grid">' + items.map(cardHtml).join('') + '</div>';
+    });
+    listEl.innerHTML = html;
+
+    Array.prototype.forEach.call(listEl.querySelectorAll('.card'), function(card){
+      card.addEventListener('click', function(){
+        var open = card.getAttribute('aria-expanded') === 'true';
+        card.setAttribute('aria-expanded', String(!open));
+      });
+      card.addEventListener('keydown', function(e){
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); card.click(); }
+      });
+    });
+  }
+
+  function setSyncStatus(text, isLive){
+    if(!syncEl) return;
+    syncEl.textContent = text;
+    syncEl.classList.toggle('is-live', !!isLive);
+  }
+
+  // countdown to the start of CIITS'26 (10/nov/2026 09:00, horário de São Luís/MA, UTC-03:00)
+  var EVENT_START = new Date('2026-11-10T09:00:00-03:00');
+  var EVENT_END = new Date('2026-11-12T23:59:00-03:00');
+  (function initCountdown(){
+    var box = document.getElementById('countdown');
+    var labelEl = document.getElementById('countdownLabel');
+    var unitsEl = document.getElementById('countdownUnits');
+    var dEl = document.getElementById('cdD'), hEl = document.getElementById('cdH'),
+        mEl = document.getElementById('cdM'), sEl = document.getElementById('cdS');
+    if(!box) return;
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+      var now = new Date();
+      if(now >= EVENT_END){
+        box.classList.remove('is-live');
+        labelEl.textContent = 'O CIITS\'26 foi finalizado';
+        if(unitsEl) unitsEl.style.display = 'none';
+        clearInterval(timer);
+        return;
+      }
+      if(now >= EVENT_START){
+        box.classList.add('is-live');
+        labelEl.textContent = 'O CIITS\'26 está acontecendo agora';
+        if(unitsEl) unitsEl.style.display = 'none';
+        return;
+      }
+      var diff = EVENT_START - now;
+      var totalSec = Math.floor(diff/1000);
+      var days = Math.floor(totalSec/86400);
+      var hours = Math.floor((totalSec%86400)/3600);
+      var mins = Math.floor((totalSec%3600)/60);
+      var secs = totalSec%60;
+      if(dEl) dEl.textContent = days;
+      if(hEl) hEl.textContent = pad(hours);
+      if(mEl) mEl.textContent = pad(mins);
+      if(sEl) sEl.textContent = pad(secs);
+    }
+    tick();
+    var timer = setInterval(tick, 1000);
+  })();
+
+  // first paint from the embedded dataset, always available even offline
+  rebuildControls();
+  render();
+  setSyncStatus('Dados locais (' + new Date().toLocaleDateString('pt-BR') + ')', false);
+
+  // then try to refresh live from the published Google Sheet; fail silently and keep local data
+  (function loadLiveData(){
+    if(!window.fetch) return;
+    fetch(SHEET_CSV_URL, { cache: 'no-store' })
+      .then(function(resp){ if(!resp.ok) throw new Error('http '+resp.status); return resp.text(); })
+      .then(function(text){
+        var rows = parseCSV(text);
+        var sessions = rowsToSessions(rows);
+        if(!sessions || !sessions.length) throw new Error('planilha vazia ou formato inesperado');
+        SESSIONS = sessions;
+        rebuildControls();
+        render();
+        setSyncStatus('Atualizado agora · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), true);
+      })
+      .catch(function(err){
+        // keep whatever is already rendered (embedded dataset); just note it quietly
+        setSyncStatus('Dados locais (sem conexão com a planilha)', false);
+      });
+  })();
+
+})();
+</script>
+
+</body></html>
