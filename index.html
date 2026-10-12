@@ -781,6 +781,21 @@ footer{
     return true;
   }
 
+  // aceita qualquer link que o Google Drive copia para uma foto (view, open?id=, uc?id=, drivesdk, drive_link, pastas
+  // compartilhadas etc.) e converte para um link de imagem direta, utilizável em <img src="...">. Um link que já
+  // aponta direto para um arquivo de imagem (não é do Drive) passa sem alteração.
+  function normalizeFotoUrl(raw){
+    var url = (raw||'').toString().trim();
+    if(!url) return url;
+    var m = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/.exec(url)
+         || /drive\.google\.com\/open\?[^#]*\bid=([a-zA-Z0-9_-]+)/.exec(url)
+         || /drive\.google\.com\/uc\?[^#]*\bid=([a-zA-Z0-9_-]+)/.exec(url)
+         || /drive\.google\.com\/thumbnail\?[^#]*\bid=([a-zA-Z0-9_-]+)/.exec(url)
+         || /[?&]id=([a-zA-Z0-9_-]+)/.exec(url);
+    if(m && m[1]) return 'https://lh3.googleusercontent.com/d/' + m[1];
+    return url;
+  }
+
   function cardHtml(s){
     var speakers = s.palestrantes || [];
     var speakersChips = speakers.map(function(p){return esc(p.nome);}).join(', ');
@@ -791,7 +806,8 @@ footer{
       detail += '<div class="mod-line">🎙️ <b>Mediação:</b> '+esc(s.moderador)+'</div>';
     }
     speakers.forEach(function(p){
-      detail += '<div class="speaker">'+(p.foto? '<img class="speaker-photo" src="'+esc(p.foto)+'" alt="'+esc(p.nome)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<div class="speaker-body"><div class="speaker-name">'+esc(p.nome)+(p.instituicao? ' <span class="speaker-inst">· '+esc(p.instituicao)+'</span>':'')+'</div>'+(p.bio? '<div class="speaker-bio">'+esc(p.bio)+'</div>':'')+'</div></div>';
+      var fotoUrl = normalizeFotoUrl(p.foto);
+      detail += '<div class="speaker">'+(fotoUrl? '<img class="speaker-photo" src="'+esc(fotoUrl)+'" alt="'+esc(p.nome)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'<div class="speaker-body"><div class="speaker-name">'+esc(p.nome)+(p.instituicao? ' <span class="speaker-inst">· '+esc(p.instituicao)+'</span>':'')+'</div>'+(p.bio? '<div class="speaker-bio">'+esc(p.bio)+'</div>':'')+'</div></div>';
     });
     if(s.cursos && s.cursos.length){
       detail += '<div class="cursos-line"><b>Cursos envolvidos:</b> '+esc(s.cursos.join(' · '))+'</div>';
