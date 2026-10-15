@@ -593,7 +593,10 @@ footer{
   function parsePalestrantes(cell, bioCell, fotoCell){
     if(!cell) return [];
     var parts = splitNonEmpty(cell, ';;');
-    var bioParts = bioCell ? bioCell.split(/\n\s*\n/).map(function(x){return x.trim();}).filter(Boolean) : [];
+    // Mini-bio accepts either ";;" between bios (preferred, matches Palestrantes/Foto) or a blank line
+    var bioPartsDouble = bioCell ? splitNonEmpty(bioCell, ';;') : [];
+    var bioPartsBlank = bioCell ? bioCell.split(/\n\s*\n/).map(function(x){return x.trim();}).filter(Boolean) : [];
+    var bioParts = (bioPartsDouble.length === parts.length) ? bioPartsDouble : bioPartsBlank;
     var fotoParts = fotoCell ? splitNonEmpty(fotoCell, ';;') : [];
     var sameBioCount = bioParts.length === parts.length;
     var sameFotoCount = fotoParts.length === parts.length;
