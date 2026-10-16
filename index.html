@@ -417,11 +417,23 @@ footer{
   .controls{gap:6px}
   .search-wrap{flex:1 1 100%}
   select{max-width:none;flex:1 1 calc(50% - 3px)}
-  .day-btn{padding:6px 12px}
-  .day-btn b{font-size:.86rem}
-  .day-btn span{font-size:.62rem}
+  .days{overflow-x:visible}
+  .day-btn{flex:1 1 0;min-width:0;padding:6px 6px}
+  .day-btn b{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-btn span{font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
   .chipset{gap:5px}
   .chip{padding:5px 10px;font-size:.72rem}
+}
+@media (max-width:900px) and (orientation:landscape){
+  .days{overflow-x:visible}
+  .day-btn{flex:1 1 0;min-width:0;padding:6px 10px}
+  .day-btn b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+}
+@media (max-width:360px){
+  .day-btn{padding:6px 4px}
+  .day-btn b{font-size:.78rem}
+  .day-btn span{font-size:.56rem}
 }
 @media (max-width:420px){
   .card{padding:12px 13px}
@@ -498,10 +510,11 @@ footer{
 
   var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/124GE2NNHHVoQbQkHDV_GPHjhAybyvaxHNlJZTODvUhA/export?format=csv&gid=1307311357";
 
+  // diaLabel = texto em evidência no botão (a data); diaSub = texto em menor destaque (ordinal do dia + dia da semana)
   var DIA_INFO = {
-    "10/11/2026": {diaLabel:"Dia 1", diaSub:"10 de novembro · Terça"},
-    "11/11/2026": {diaLabel:"Dia 2", diaSub:"11 de novembro · Quarta"},
-    "12/11/2026": {diaLabel:"Dia 3", diaSub:"12 de novembro · Quinta"}
+    "10/11/2026": {diaLabel:"10 de novembro", diaSub:"1º Dia · Terça"},
+    "11/11/2026": {diaLabel:"11 de novembro", diaSub:"2º Dia · Quarta"},
+    "12/11/2026": {diaLabel:"12 de novembro", diaSub:"3º Dia · Quinta"}
   };
   var WEEKDAYS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
   var MONTHS = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -513,10 +526,11 @@ footer{
     if(m){
       var d = parseInt(m[1],10), mo = parseInt(m[2],10), y = parseInt(m[3],10);
       var dt = new Date(y, mo-1, d);
-      var sub = d + ' de ' + (MONTHS[mo-1]||'') + ' · ' + (WEEKDAYS[dt.getDay()]||'');
-      return {diaLabel:'Dia ' + (ordinalIndex+1), diaSub: sub};
+      var label = d + ' de ' + (MONTHS[mo-1]||'');
+      var sub = (ordinalIndex+1) + 'º Dia · ' + (WEEKDAYS[dt.getDay()]||'');
+      return {diaLabel:label, diaSub: sub};
     }
-    return {diaLabel:'Dia ' + (ordinalIndex+1), diaSub: dataStr||''};
+    return {diaLabel: dataStr||'', diaSub: (ordinalIndex+1) + 'º Dia'};
   }
 
   var TURNO_CANON = {
