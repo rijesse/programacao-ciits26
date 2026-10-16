@@ -418,22 +418,22 @@ footer{
   .search-wrap{flex:1 1 100%}
   select{max-width:none;flex:1 1 calc(50% - 3px)}
   .days{overflow-x:visible}
-  .day-btn{flex:1 1 0;min-width:0;padding:6px 6px}
-  .day-btn b{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .day-btn span{font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .day-btn{flex:1 1 0;min-width:0;max-width:none;padding:6px 6px;align-items:center}
+  .day-btn b{display:block;width:100%;max-width:100%;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+  .day-btn span{display:block;width:100%;max-width:100%;font-size:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
   .chipset{gap:5px}
   .chip{padding:5px 10px;font-size:.72rem}
 }
 @media (max-width:900px) and (orientation:landscape){
   .days{overflow-x:visible}
-  .day-btn{flex:1 1 0;min-width:0;padding:6px 10px}
-  .day-btn b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .day-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .day-btn{flex:1 1 0;min-width:0;max-width:none;padding:6px 10px;align-items:center}
+  .day-btn b{display:block;width:100%;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+  .day-btn span{display:block;width:100%;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 }
 @media (max-width:360px){
-  .day-btn{padding:6px 4px}
-  .day-btn b{font-size:.78rem}
-  .day-btn span{font-size:.56rem}
+  .day-btn{padding:6px 3px}
+  .day-btn b{font-size:.74rem}
+  .day-btn span{font-size:.54rem}
 }
 @media (max-width:420px){
   .card{padding:12px 13px}
