@@ -891,6 +891,7 @@ footer{
   // countdown to the start of CIITS'26 (10/nov/2026 09:00, horário de São Luís/MA, UTC-03:00)
   var EVENT_START = new Date('2026-11-10T09:00:00-03:00');
   var EVENT_END = new Date('2026-11-12T23:59:00-03:00');
+  var EVENT_DAY_START = new Date('2026-11-10T00:00:00-03:00'); // meia-noite do dia 1, horário de São Luís/MA
   (function initCountdown(){
     var box = document.getElementById('countdown');
     var labelEl = document.getElementById('countdownLabel');
@@ -914,6 +915,14 @@ footer{
         if(unitsEl) unitsEl.style.display = 'none';
         return;
       }
+      if(now >= EVENT_DAY_START){
+        box.classList.add('is-live');
+        labelEl.textContent = 'É HOJE!';
+        if(unitsEl) unitsEl.style.display = 'none';
+        return;
+      }
+      box.classList.remove('is-live');
+      if(unitsEl) unitsEl.style.display = '';
       var diff = EVENT_START - now;
       var totalSec = Math.floor(diff/1000);
       var days = Math.floor(totalSec/86400);
