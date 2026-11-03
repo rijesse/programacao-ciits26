@@ -862,6 +862,10 @@ footer{
     turnos.forEach(function(t){
       var items = filtered.filter(function(s){ return s.turno===t; });
       if(!items.length) return;
+      items.sort(function(a,b){
+        if(a.minutos !== b.minutos) return a.minutos - b.minutos;
+        return a.titulo.localeCompare(b.titulo,'pt-BR'); // mesmo horário: ordem estável e previsível
+      });
       html += '<div class="turno-head"><h2>'+t+'</h2><div class="rule"></div><div class="n">'+items.length+'</div></div>';
       html += '<div class="grid">' + items.map(cardHtml).join('') + '</div>';
     });
